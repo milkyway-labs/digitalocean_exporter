@@ -2,6 +2,7 @@ package collector
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"github.com/digitalocean/godo"
@@ -49,6 +50,7 @@ func (c *VolumeCollector) Describe(ch chan<- *prometheus.Desc) {
 func (c *VolumeCollector) Collect(ch chan<- prometheus.Metric) {
 	ctx, cancel := context.WithTimeout(context.Background(), c.timeout)
 	defer cancel()
+
 	volumes, _, err := c.client.Storage.ListVolumes(ctx, nil)
 	if err != nil {
 		c.errors.WithLabelValues("volume").Add(1)
@@ -61,7 +63,7 @@ func (c *VolumeCollector) Collect(ch chan<- prometheus.Metric) {
 
 	for _, vol := range volumes {
 		labels := []string{
-			vol.ID,
+			strconv.Itoa(vol.DropletIDs[0]),	// This isn't actual volume ID just for relating to droplet
 			vol.Name,
 			vol.Region.Slug,
 		}
